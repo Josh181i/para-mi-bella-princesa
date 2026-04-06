@@ -352,23 +352,7 @@
       border-radius: 0;
     }
 
-    .piece::after {
-      content: attr(data-num);
-      position: absolute;
-      top: 6px;
-      left: 6px;
-      width: 22px;
-      height: 22px;
-      display: grid;
-      place-items: center;
-      border-radius: 50%;
-      font-size: 10px;
-      font-weight: 800;
-      background: rgba(18, 8, 11, .72);
-      border: 1px solid rgba(255,255,255,.13);
-      color: #fff;
-      transition: opacity .25s ease;
-    }
+  
 
     .piece.correct::after {
       opacity: 0;
@@ -852,7 +836,6 @@
       piece.className = 'piece';
       piece.draggable = true;
       piece.dataset.index = index;
-      piece.dataset.num = index + 1;
       piece.style.backgroundImage = `url("${currentImageSrc}")`;
       piece.style.backgroundSize = `${gridSize * 100}% ${gridSize * 100}%`;
       piece.style.backgroundPosition = getBackgroundPosition(index);
@@ -883,8 +866,7 @@
       const slot = document.createElement('div');
       slot.className = 'slot';
       slot.dataset.index = index;
-      slot.innerHTML = `<span class="slot-label">${index + 1}</span>`;
-
+slot.innerHTML = '';
       slot.addEventListener('dragover', (e) => {
         e.preventDefault();
         slot.classList.add('active');
