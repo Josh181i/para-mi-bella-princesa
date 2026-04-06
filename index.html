@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rompecabezas para ti</title>
+  <style>
+    :root {
+      --bg-1: #050505;
+      --bg-2: #13060b;
+      --bg-3: #1b0a11;
+      --card: rgba(255,255,255,0.07);
+      --line: rgba(255,255,255,0.12);
+      --text: #fff8fb;
+      --muted: #f5c9d8;
+      --white-soft: #fff2f6;
+      --pink: #ff4f8b;
+      --fuchsia: #ff0f7b;
+      --red: #d8193f;
+      --deep-red: #7f1027;
+      --success: #fff;
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+      --radius: 26px;
+      --piece-gap: 3px;
+      --slot-gap: 2px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(255, 20, 110, 0.24), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(216, 25, 63, 0.22), transparent 28%),
+        linear-gradient(180deg, var(--bg-3) 0%, var(--bg-2) 35%, var(--bg-1) 100%);
+      overflow-x: hidden;
+    }
+
+    .glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .glow span {
+      position: absolute;
+      display: block;
+      border-radius: 999px;
+      filter: blur(26px);
+      opacity: 0.22;
+      animation: floatGlow 16s ease-in-out infinite;
+    }
+
+    .glow span:nth-child(1) {
+      width: 240px;
+      height: 240px;
+      background: #ff0f7b;
+      top: 4%;
+      left: 6%;
+    }
+
+    .glow span:nth-child(2) {
+      width: 200px;
+      height: 200px;
+      background: #d8193f;
+      bottom: 8%;
+      right: 5%;
+      animation-duration: 18s;
+    }
+
+    .glow span:nth-child(3) {
+      width: 150px;
+      height: 150px;
+      background: #ffffff;
+      top: 32%;
+      right: 14%;
+      animation-duration: 20s;
+      opacity: 0.12;
+    }
+
+    @keyframes floatGlow {
+      0%, 100% { transform: translate3d(0,0,0) scale(1); }
+      50% { transform: translate3d(14px,-18px,0) scale(1.08); }
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      width: min(1120px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 22px 0 42px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.03fr .97fr;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.05));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .intro {
+      padding: 30px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      color: #ffd6e4;
+      font-size: 14px;
+      letter-spacing: .2px;
+    }
+
+    h1 {
+      margin: 18px 0 12px;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1.02;
+    }
+
+    .gradient {
+      background: linear-gradient(90deg, #ffffff 0%, #ffd6e8 28%, #ff5792 70%, #ffffff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .lead {
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.8;
+      max-width: 60ch;
+    }
+
+    .photo-card {
+      padding: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 430px;
+    }
+
+    .photo-frame {
+      position: relative;
+      width: min(100%, 390px);
+      aspect-ratio: 9 / 16;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 24px 50px rgba(0,0,0,.42);
+      transform: rotate(-2deg);
+      background: #10060b;
+    }
+
+    .photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      image-rendering: auto;
+    }
+
+    .photo-badge {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      padding: 11px 14px;
+      background: rgba(13, 5, 8, 0.72);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+      font-size: 14px;
+      color: #fff4f8;
+      backdrop-filter: blur(10px);
+    }
+
+    .section {
+      padding: 22px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .section h2 {
+      margin: 0 0 6px;
+      font-size: clamp(24px, 3vw, 34px);
+    }
+
+    .section p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button,
+    select {
+      border: 0;
+      outline: none;
+      color: #fff;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 14px;
+      transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .btn,
+    select {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.13);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--red), var(--fuchsia));
+      box-shadow: 0 14px 35px rgba(255, 15, 123, 0.28);
+      font-weight: 700;
+    }
+
+    .btn:hover,
+    .btn-primary:hover,
+    select:hover {
+      transform: translateY(-2px);
+    }
+
+    .status-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 12px;
+      margin: 14px 0 18px;
+    }
+
+    .status-card {
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .status-label {
+      color: #ffd7e4;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .status-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .board-area {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .tray,
+    .board-shell {
+      padding: 16px;
+      border-radius: 24px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.09);
+    }
+
+    .tray h3,
+    .board-shell h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .tray p,
+    .board-shell p {
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    .pieces {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--piece-gap);
+      min-height: 120px;
+    }
+
+    .piece {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.12);
+      cursor: grab;
+      user-select: none;
+      background-repeat: no-repeat;
+      background-color: #14060a;
+      box-shadow: 0 8px 18px rgba(0,0,0,.22);
+      transition: transform .16s ease, opacity .18s ease, box-shadow .18s ease;
+      image-rendering: auto;
+    }
+
+    .piece:hover {
+      transform: scale(1.02);
+      box-shadow: 0 12px 20px rgba(255, 15, 123, 0.16);
+    }
+
+    .piece.dragging {
+      opacity: .62;
+      cursor: grabbing;
+    }
+
+    .piece.correct {
+      cursor: default;
+      border-color: rgba(255,255,255,.06);
+      box-shadow: none;
+      border-radius: 0;
+    }
+
+    .piece::after {
+      content: attr(data-num);
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 22px;
+      height: 22px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      font-size: 10px;
+      font-weight: 800;
+      background: rgba(18, 8, 11, .72);
+      border: 1px solid rgba(255,255,255,.13);
+      color: #fff;
+      transition: opacity .25s ease;
+    }
+
+    .piece.correct::after {
+      opacity: 0;
+    }
+
+    .board-wrapper {
+      position: relative;
+      border-radius: 22px;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--slot-gap);
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      padding: 0;
+      background: rgba(255,255,255,.02);
+    }
+
+    .slot {
+      position: relative;
+      border-radius: 0;
+      border: 1px dashed rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.018));
+      min-height: 72px;
+      overflow: hidden;
+      transition: border-color .18s ease, transform .18s ease, background .18s ease;
+    }
+
+    .slot.active {
+      border-color: rgba(255, 79, 139, .72);
+      background: rgba(255, 79, 139, .10);
+      transform: scale(1.01);
+    }
+
+    .slot.filled {
+      border-color: rgba(255,255,255,.02);
+      background: transparent;
+    }
+
+    .slot-label {
+      position: absolute;
+      right: 7px;
+      bottom: 7px;
+      font-size: 10px;
+      color: rgba(255,255,255,.42);
+      background: rgba(16, 7, 10, .6);
+      padding: 3px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.07);
+      pointer-events: none;
+      transition: opacity .25s ease;
+    }
+
+    .slot.filled .slot-label {
+      opacity: 0;
+    }
+
+    .completed-overlay {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(1.035);
+      transition: opacity .7s ease, transform .8s ease;
+      z-index: 4;
+      background: #0b0608;
+    }
+
+    .completed-overlay img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      image-rendering: auto;
+    }
+
+    .board-wrapper.completed .completed-overlay {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .board-wrapper.completed .board {
+      opacity: 0;
+      transition: opacity .35s ease;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      text-align: center;
+      color: #ffd7e4;
+      font-size: 14px;
+      line-height: 1.8;
+      padding: 0 8px;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(8, 2, 5, 0.82);
+      backdrop-filter: blur(12px);
+      z-index: 60;
+      padding: 16px;
+    }
+
+    .overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      width: min(760px, 100%);
+      max-height: min(88vh, 900px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 24px;
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at top left, rgba(255, 15, 123, 0.18), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(216, 25, 63, 0.18), transparent 30%),
+        linear-gradient(180deg, rgba(22, 8, 13, .98), rgba(7, 3, 5, .99));
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 28px 80px rgba(0,0,0,.55);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .modal::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    .modal::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--red), var(--fuchsia));
+      border-radius: 999px;
+    }
+
+    .modal > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .trophy {
+      width: 78px;
+      height: 78px;
+      margin: 0 auto 14px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 34px;
+      background: linear-gradient(135deg, rgba(216,25,63,.3), rgba(255,15,123,.34));
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 12px 30px rgba(255, 15, 123, 0.18);
+    }
+
+    .modal h3 {
+      text-align: center;
+      font-size: clamp(28px, 4vw, 40px);
+      margin: 8px 0 10px;
+    }
+
+    .message {
+      text-align: left;
+      margin: 16px auto 0;
+      max-width: 62ch;
+      color: #fff5f8;
+      font-size: 17px;
+      line-height: 1.95;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      padding: 18px;
+      border-radius: 22px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .confetti {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 70;
+      overflow: hidden;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 18px;
+      opacity: .9;
+      top: -24px;
+      animation: fall linear forwards;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh) rotate(680deg);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .board-area {
+        grid-template-columns: 1fr;
+      }
+
+      .photo-card {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .wrap {
+        width: min(100% - 16px, 100%);
+        padding-top: 16px;
+      }
+
+      .intro,
+      .section {
+        padding: 18px;
+      }
+
+      .hero {
+        gap: 16px;
+      }
+
+      .status-row {
+        grid-template-columns: 1fr;
+      }
+
+      .photo-frame {
+        width: min(100%, 360px);
+        transform: none;
+      }
+
+      .tray,
+      .board-shell {
+        padding: 14px;
+      }
+
+      .message {
+        font-size: 15px;
+        line-height: 1.85;
+      }
+
+      .modal {
+        padding: 18px;
+        max-height: 90vh;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .controls {
+        width: 100%;
+      }
+
+      .controls > * {
+        flex: 1 1 calc(50% - 6px);
+        min-width: 0;
+      }
+
+      .pieces {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .board {
+        width: 100%;
+      }
+
+      h1 {
+        font-size: clamp(30px, 11vw, 42px);
+      }
+
+      .lead {
+        font-size: 16px;
+      }
+
+      .status-value {
+        font-size: 20px;
+      }
+
+      .footer-note {
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <div class="wrap">
+    <section class="hero">
+      <div class="intro card">
+        <div class="eyebrow">💖 Un detalle bonito para ti mi vida</div>
+        <h1><span class="gradient">Cada pieza habla de nosotros papapa.</span></h1>
+        <p class="lead">
+          No quise hacer algo común. Quise hacer algo bonito, especial y distinto. Un pequeño reto con una sorpresa al final,
+          para recordarle que incluso en medio del cansancio, del estudio y de la presión, sigues siendo alguien increíble que puede dar mas de si <3 .
+        </p>
+      </div>
+
+      <div class="photo-card card">
+        <div class="photo-frame">
+          <img id="previewImage" alt="Foto de ustedes" src="WhatsApp Image 2026-04-05 at 7.23.25 PM.jpeg" />
+          <div class="photo-badge">Esta es la imagen que vas a armar pieza por pieza ✨</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section card">
+      <div class="section-head">
+        <div>
+          <h2>Rompecabezas de nosotros dos 😻</h2>
+          <p>Arrastra cada piecita. Cuando completes la imagen, aparecerá la imagen completa bonita.</p>
+        </div>
+        <div class="controls">
+          <select id="difficulty">
+            <option value="3">Fácil · 3 x 3</option>
+            <option value="4" selected>Normal · 4 x 4</option>
+            <option value="5">Difícil · 5 x 5</option>
+          </select>
+          <button class="btn" id="shuffleBtn">Mezclar</button>
+          <button class="btn-primary" id="resetBtn">Reiniciar</button>
+        </div>
+      </div>
+
+      <div class="status-row">
+        <div class="status-card">
+          <div class="status-label">Piezas correctas</div>
+          <div class="status-value"><span id="correctCount">0</span> / <span id="totalCount">16</span></div>
+        </div>
+        <div class="status-card">
+          <div class="status-label">Tiempo</div>
+          <div class="status-value" id="timer">00:00</div>
+        </div>
+        <div class="status-card">
+          <div class="status-label">Estado</div>
+          <div class="status-value" id="statusText">Esperando que empiece ✨</div>
+        </div>
+      </div>
+
+      <div class="board-area">
+        <div class="tray">
+          <h3>Piezas</h3>
+          <p>Toma una pieza y ponla donde pienses que esta biennn.</p>
+          <div class="pieces" id="piecesContainer"></div>
+        </div>
+
+        <div class="board-shell">
+          <h3>Tablero</h3>
+          <p>Cuando quede completo, la foto aparecerá totalmente unida bonita.</p>
+          <div class="board-wrapper" id="boardWrapper">
+            <div class="board" id="board"></div>
+            <div class="completed-overlay" id="completedOverlay">
+              <img id="fullImage" alt="Imagen completa" src="WhatsApp Image 2026-04-05 at 7.23.25 PM.jpeg" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        Esta echo con amor bonito y detalles bonitos de nuestra primera salida, con tus colores favoritos💖.
+      </div>
+    </section>
+  </div>
+
+  <img id="sourceImage" alt="Fuente del rompecabezas" src="WhatsApp Image 2026-04-05 at 7.23.25 PM.jpeg" style="display:none;" />
+
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <div class="trophy">💘</div>
+      <h3>Lo lograste, mi amoshito bella<3 .</h3>
+      <div class="message">
+        Lo hicisteeeee. Pieza por pieza armaste esta imagen, y no sé por qué, pero se siente bonito pensar que también así se construyen las cosas más importantes, con paciencia, con dedicación y con amor gonito.<br><br>
+        Sé todo lo que estás esforzándote en estos días, se muy bien todo lo que estas estudiando, todo eso cansa, agota, estresa y a veces hace sentir que todo pesa es demasiado pesado. Pero a pesar de eso no te rindes y de cierto te digo, yo ve en ti algo que tal vez tú no siempre alcanzas a ver con la misma claridad. eres una mujer increíble, fuerte, inteligente, valiente y con un corazón hermoso<3333.<br><br>
+        Hay algo en ti que me encanta, y es esa manera tan tuya de seguir adelante incluso cuando estás cansada, esa disciplina bonita que tienes, esa forma en la que te exiges, luchas y no te rindes fácil. Yo veo todo eso cada dia de nuestros dias, y por eso me siento tan orgulloso de ti.<br><br>
+        Quiero que este detalle te recuerde que no todo en medio del estudio tiene que sentirse pesado. También puede haber un momento bonito, una pausa linda, una sonrisa inesperada y alguien que te admire de verdad mientras tú sigues construyendo tu camino.<br><br>
+        Pase lo que pase con cualquier examen, nunca dudes de lo mucho que tu vales y lo mucho que yo te quiero (que es de aqui al infinitoooo y mas alla jiji). Tu capacidad no depende de un solo resultado. Tu luz, tu inteligencia, tu corazón y todo lo hermoso que hay en ti va muchísimo más allá de una nota o resultado que puedas llegar a tener.<br><br>
+        Yo confío en ti muchísimo, confío en tu esfuerzo, en tu mente, en tus ganas y en esa versión preciosa de ti que está luchando por salir adelante y honestamente, verte intentarlo ya me parece algo demasiado hermoso, esa cualidad que tienes de no rendirte nunca, es hermosa<33333 .<br><br>
+        Sigue así pliss. Sigue dando lo mejor de ti, sigue brillando, porque lo estás haciendo hermoso como cada dia que me despierto a ver tus mensajes, como cada noche que estoy ahi para cuando me digas "buenas noches". Y mientras tú sigues armando tus metas poquito a poquito, yo voy a seguir aquí, feliz de verte crecer, de verte lograr cosas y de recordarte siempre lo especial que eres para mí. ✨
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" id="playAgainBtn">Jugar otra vez</button>
+        <button class="btn" id="closeModalBtn">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="confetti" id="confetti"></div>
+
+  <script>
+    const sourceImage = document.getElementById('sourceImage');
+    const previewImage = document.getElementById('previewImage');
+    const fullImage = document.getElementById('fullImage');
+    const piecesContainer = document.getElementById('piecesContainer');
+    const board = document.getElementById('board');
+    const boardWrapper = document.getElementById('boardWrapper');
+    const completedOverlay = document.getElementById('completedOverlay');
+    const correctCountEl = document.getElementById('correctCount');
+    const totalCountEl = document.getElementById('totalCount');
+    const timerEl = document.getElementById('timer');
+    const statusText = document.getElementById('statusText');
+    const difficultyEl = document.getElementById('difficulty');
+    const overlay = document.getElementById('overlay');
+    const confetti = document.getElementById('confetti');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const playAgainBtn = document.getElementById('playAgainBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    let gridSize = 4;
+    let totalPieces = 16;
+    let correctCount = 0;
+    let timer = 0;
+    let timerInterval = null;
+    let gameStarted = false;
+    let currentImageSrc = 'WhatsApp Image 2026-04-05 at 7.23.25 PM.jpeg';
+
+    function formatTime(totalSeconds) {
+      const m = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+      const s = String(totalSeconds % 60).padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timer += 1;
+        timerEl.textContent = formatTime(timer);
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+    }
+
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function updateStatus() {
+      correctCountEl.textContent = correctCount;
+      totalCountEl.textContent = totalPieces;
+
+      if (correctCount === 0) {
+        statusText.textContent = 'Esperando que empiece ✨';
+      } else if (correctCount < totalPieces) {
+        statusText.textContent = 'Va quedando hermoso 💖';
+      } else {
+        statusText.textContent = 'Rompecabezas completado ✨';
+      }
+    }
+
+    function getBackgroundPosition(index) {
+      const row = Math.floor(index / gridSize);
+      const col = index % gridSize;
+      return `${(col / Math.max(gridSize - 1, 1)) * 100}% ${(row / Math.max(gridSize - 1, 1)) * 100}%`;
+    }
+
+    function createPiece(index) {
+      const piece = document.createElement('div');
+      piece.className = 'piece';
+      piece.draggable = true;
+      piece.dataset.index = index;
+      piece.dataset.num = index + 1;
+      piece.style.backgroundImage = `url("${currentImageSrc}")`;
+      piece.style.backgroundSize = `${gridSize * 100}% ${gridSize * 100}%`;
+      piece.style.backgroundPosition = getBackgroundPosition(index);
+
+      piece.addEventListener('dragstart', (e) => {
+        if (piece.classList.contains('correct')) {
+          e.preventDefault();
+          return;
+        }
+
+        if (!gameStarted) {
+          gameStarted = true;
+          startTimer();
+        }
+
+        piece.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', piece.dataset.index);
+      });
+
+      piece.addEventListener('dragend', () => {
+        piece.classList.remove('dragging');
+      });
+
+      return piece;
+    }
+
+    function createBoardSlot(index) {
+      const slot = document.createElement('div');
+      slot.className = 'slot';
+      slot.dataset.index = index;
+      slot.innerHTML = `<span class="slot-label">${index + 1}</span>`;
+
+      slot.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        slot.classList.add('active');
+      });
+
+      slot.addEventListener('dragleave', () => {
+        slot.classList.remove('active');
+      });
+
+      slot.addEventListener('drop', (e) => {
+        e.preventDefault();
+        slot.classList.remove('active');
+
+        if (slot.querySelector('.piece')) return;
+
+        const pieceIndex = Number(e.dataTransfer.getData('text/plain'));
+        if (pieceIndex !== index) {
+          statusText.textContent = 'Esa pieza no va ahí todavía';
+          slot.animate([
+            { transform: 'translateX(0)' },
+            { transform: 'translateX(-4px)' },
+            { transform: 'translateX(4px)' },
+            { transform: 'translateX(0)' }
+          ], { duration: 180 });
+          return;
+        }
+
+        const piece = piecesContainer.querySelector(`.piece[data-index="${pieceIndex}"]`);
+        if (!piece) return;
+
+        slot.appendChild(piece);
+        slot.classList.add('filled');
+        piece.classList.add('correct');
+        piece.draggable = false;
+        correctCount += 1;
+        updateStatus();
+
+        if (correctCount === totalPieces) {
+          stopTimer();
+          showCompletedImage();
+        }
+      });
+
+      return slot;
+    }
+
+    function showCompletedImage() {
+      boardWrapper.classList.add('completed');
+      launchConfetti();
+
+      setTimeout(() => {
+        overlay.classList.add('show');
+      }, 900);
+    }
+
+    function resetBoardCompletedState() {
+      boardWrapper.classList.remove('completed');
+    }
+
+    function buildGame() {
+      stopTimer();
+      timer = 0;
+      timerEl.textContent = '00:00';
+      correctCount = 0;
+      gameStarted = false;
+      totalPieces = gridSize * gridSize;
+      piecesContainer.innerHTML = '';
+      board.innerHTML = '';
+      resetBoardCompletedState();
+
+      board.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+      piecesContainer.style.gridTemplateColumns = `repeat(${Math.min(gridSize, 4)}, 1fr)`;
+
+      const pieceIndexes = shuffleArray([...Array(totalPieces).keys()]);
+      pieceIndexes.forEach((idx) => piecesContainer.appendChild(createPiece(idx)));
+
+      for (let i = 0; i < totalPieces; i++) {
+        board.appendChild(createBoardSlot(i));
+      }
+
+      updateStatus();
+    }
+
+    function launchConfetti() {
+      confetti.innerHTML = '';
+      const colors = ['#ff0f7b', '#d8193f', '#ff92b6', '#ffffff', '#ff4f8b'];
+      const count = 130;
+
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        el.className = 'confetti-piece';
+        el.style.left = `${Math.random() * 100}%`;
+        el.style.background = colors[Math.floor(Math.random() * colors.length)];
+        el.style.transform = `translateY(0) rotate(${Math.random() * 360}deg)`;
+        el.style.animationDuration = `${3 + Math.random() * 2.4}s`;
+        el.style.animationDelay = `${Math.random() * .35}s`;
+        el.style.opacity = `${0.7 + Math.random() * 0.3}`;
+        confetti.appendChild(el);
+      }
+
+      setTimeout(() => {
+        confetti.innerHTML = '';
+      }, 6200);
+    }
+
+    function syncImageSources(src) {
+      currentImageSrc = src;
+      sourceImage.src = src;
+      previewImage.src = src;
+      fullImage.src = src;
+    }
+
+    function handleImageError() {
+      statusText.textContent = 'No se pudo cargar la imagen. Revisa que esté en la misma carpeta con ese nombre exacto.';
+    }
+
+    difficultyEl.addEventListener('change', () => {
+      gridSize = Number(difficultyEl.value);
+      buildGame();
+    });
+
+    shuffleBtn.addEventListener('click', buildGame);
+    resetBtn.addEventListener('click', buildGame);
+
+    playAgainBtn.addEventListener('click', () => {
+      overlay.classList.remove('show');
+      buildGame();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      overlay.classList.remove('show');
+    });
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('show');
+    });
+
+    sourceImage.addEventListener('load', () => {
+      if (sourceImage.naturalWidth > 0) {
+        buildGame();
+      }
+    });
+
+    sourceImage.addEventListener('error', handleImageError);
+    previewImage.addEventListener('error', handleImageError);
+    fullImage.addEventListener('error', handleImageError);
+
+    syncImageSources(currentImageSrc);
+
+    if (sourceImage.complete) {
+      if (sourceImage.naturalWidth > 0) buildGame();
+      else handleImageError();
+    }
+  </script>
+</body>
+</html>
